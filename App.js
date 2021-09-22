@@ -1,8 +1,24 @@
 import React from 'react';
-import { StyleSheet, Dimensions, View, Button, Text, TextInput, FlatList } from 'react-native';
+import {
+  StyleSheet,
+  Dimensions,
+  View,
+  Button,
+  Text,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Modal
+} from 'react-native';
 import Slider from '@react-native-community/slider';
 import Pdf from 'react-native-pdf';
 import { ProgressView } from "@react-native-community/progress-view";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from 'react-native-responsive-screen';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Foundation from 'react-native-vector-icons/Foundation';
 
 // pdf uri
 const source = { uri: 'https://books.goalkicker.com/ReactNativeBook/ReactNativeNotesForProfessionals.pdf', cache: true };
@@ -20,22 +36,49 @@ export default class PDFExample extends React.Component {
   renderItem = ({ item, index }) => {
     if (index !== 0) return (
       <View>
-        <View style={{ flexDirection: "row", alignSelf: "center" }}>
-          <Button title={"Un-Book Mark"} onPress={async () => {
-            let newstr = await this.state.book_mark
-            console.log(newstr)
-            let array = await newstr.split(',')
 
-            let index = await array.indexOf(item.toString())
-            array.splice(index, 1)
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: "space-around",
+          paddingHorizontal: hp('2%'),
+          backgroundColor: "#fff",
+          marginVertical: hp('1%'),
+          alignItems: "center"
+        }}>
 
-            this.setState({ book_mark: array.toString() })
+          {/* Bookmark Button */}
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: this.state.book_mark.split(',').includes(this.state.num.toString()) ? "rgba(99, 96, 255, 1)" : "rgba(244, 244, 244, 1)" }]}
+            onPress={async () => {
+              let newstr = await this.state.book_mark
+              let array = await newstr.split(',')
+              let index = await array.indexOf(item.toString())
+              array.splice(index, 1)
+              this.setState({ book_mark: array.toString() })
+            }}
+            onLongPress={() => this.setState({ show_bk: !this.state.show_bk })}
+          >
+            <FontAwesome
+              name={'bookmark-o'}
+              color={this.state.book_mark.split(',').includes(this.state.num.toString()) ? "#FFF" : 'rgba(41, 45, 50, 1)'}
+              size={hp('2.2%')}
+            />
+          </TouchableOpacity>
 
-          }} />
-          <View style={{ width: "10%" }} />
           <Text style={{ alignSelf: "center" }}>{item}</Text>
-          <View style={{ width: "10%" }} />
-          <Button title="Jump" onPress={() => this.setState({ num: parseInt(item), show_bk: false })} />
+
+          {/* Bookmark Button */}
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: this.state.book_mark.split(',').includes(this.state.num.toString()) ? "rgba(99, 96, 255, 1)" : "rgba(244, 244, 244, 1)" }]}
+            onPress={() => this.setState({ num: parseInt(item), show_bk: false })}
+          >
+            <Foundation
+              name={'page-search'}
+              color={this.state.book_mark.split(',').includes(this.state.num.toString()) ? "#FFF" : 'rgba(41, 45, 50, 1)'}
+              size={hp('2.2%')}
+            />
+          </TouchableOpacity>
         </View>
 
         <Pdf
@@ -66,47 +109,57 @@ export default class PDFExample extends React.Component {
 
     return (
       <View style={styles.container}>
-         {/* count and book mark btn */}
+
+        {/* Header */}
         {!this.state.show_bk &&
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text>Current - Total:  {this.state.num} - {this.state.total}</Text>
-            <View style={{ width: "5%" }} />
-            <Button title={this.state.book_mark.split(',').includes(this.state.num.toString()) ? "Un-Book Mark" : "Book Mark"} onPress={async () => {
-              let newstr = await this.state.book_mark
-              console.log(newstr)
-              let array = await newstr.split(',')
-              console.log(array);
-              if (array.includes(this.state.num.toString())) {
-                let index = await array.indexOf(this.state.num.toString())
-                array.splice(index, 1)
-              }
-              else {
-                array.push(this.state.num)
-              }
-              this.setState({ book_mark: array.toString() })
+          <View style={styles.header}>
 
-            }} />
+            {/* Progress */}
+            <TouchableOpacity
+              onPress={() => this.setState({ Popup: true })}
+              style={{
+                backgroundColor: "rgba(244, 244, 244, 1)",
+                height: hp('0.5%'),
+                width: wp('80%'),
+                borderRadius: hp('0.5%'),
+                borderColor: 'rgba(244, 244, 244, 1)',
+              }}>
+              <View
+                style={{
+                  width: `${parseFloat((this.state.num / this.state.total * 100).toFixed(0))}%`,
+                  backgroundColor: "rgba(99, 96, 255, 1)",
+                  height: hp('0.5%'),
+                  borderRadius: hp('0.5%')
+                }}>
 
+              </View>
+            </TouchableOpacity>
+
+            {/* Bookmark Button */}
+            <TouchableOpacity
+              style={[styles.backButton, { backgroundColor: this.state.book_mark.split(',').includes(this.state.num.toString()) ? "rgba(99, 96, 255, 1)" : "rgba(244, 244, 244, 1)" }]}
+              onPress={async () => {
+                let newstr = await this.state.book_mark
+                let array = await newstr.split(',')
+                if (array.includes(this.state.num.toString())) {
+                  let index = await array.indexOf(this.state.num.toString())
+                  array.splice(index, 1)
+                }
+                else {
+                  array.push(this.state.num)
+                }
+                this.setState({ book_mark: array.toString() })
+              }}
+              onLongPress={() => this.setState({ show_bk: !this.state.show_bk })}
+            >
+              <FontAwesome
+                name={'bookmark-o'}
+                color={this.state.book_mark.split(',').includes(this.state.num.toString()) ? "#FFF" : 'rgba(41, 45, 50, 1)'}
+                size={hp('2.2%')}
+              />
+            </TouchableOpacity>
           </View>
         }
-        <View style={{ height: "2%" }} />
-
-        {/* show pdf or book mark list */}
-        <Button title={!this.state.show_bk ? "view book mark" : "View Pdf"} onPress={() => this.setState({ show_bk: !this.state.show_bk })} />
-       
-        {/* progress */}
-        {!this.state.show_bk && <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <ProgressView
-            progressTintColor="blue"
-            trackTintColor="red"
-            progress={this.state.progress}
-            style={{ width: "85%" }}
-          />
-          <View style={{ width: "5%" }} />
-          <Text>{parseFloat((this.state.num / this.state.total * 100).toFixed(0))}%</Text>
-        </View>
-        }
-          {/* !this.state.show_bk ? pdf : book mark */}
 
         {!this.state.show_bk ? <Pdf
           source={source}
@@ -121,15 +174,14 @@ export default class PDFExample extends React.Component {
           onError={(error) => {
             console.log(error);
           }}
-          enablePaging
-          horizontal
           scale={this.state.SliderValue}
           enableRTL
           page={this.state.num}
           onPressLink={(uri) => {
             console.log(`Link presse: ${uri}`)
           }}
-          style={styles.pdf} /> :
+          style={styles.pdf} />
+          :
           <FlatList
             style={{ flex: 1, }}
             showsVerticalScrollIndicator={false}
@@ -141,50 +193,120 @@ export default class PDFExample extends React.Component {
 
         }
 
-        {!this.state.show_bk &&
-          <>
-          {/* back next,jump btn */}
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", alignSelf: "flex-end" }}>
-              <View style={{ flexDirection: "row", alignSelf: "center" }}>
-              <Button title="back" onPress={() => this.setState({ num: this.state.num - 1 })} />
-                <View style={{ width: "10%" }} />
-                <Text style={{ alignSelf: "center" }}>{this.state.num}</Text>
-                <View style={{ width: "10%" }} />
-                <Button title="next" onPress={() => this.setState({ num: this.state.num + 1 })} />
-              </View>
-              <View style={{ width: "3%" }} />
+        {this.state.Popup &&
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={this.state.Popup}
+            onRequestClose={() => {
+              this.setState({ Popup: false })
+            }}
+          >
+            <View style={{
+              flex: 1,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: hp('0.2%')
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              backgroundColor: "rgba(50, 50, 50, 0.8)",
+              justifyContent: "center"
+            }}>
+              <TouchableOpacity onPress={() => this.setState({ Popup: false })}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute"
+                }} />
+              <View style={{
+                backgroundColor: "#FFF",
+                borderRadius: hp('2%'),
+                paddingHorizontal: hp('1.5%'),
+                width: '85%',
+                alignSelf: "center",
+              }}>
 
-              <View style={{ flexDirection: "row", alignSelf: "center" }}>
+                <Text allowFontScaling={false}
+                  style={{
+                    textAlign: "center",
+                    fontSize: hp('2%'),
+                    fontFamily: "Roboto-Regular",
+                    marginVertical: hp('2%')
+                  }} >Jump To</Text>
+
                 <TextInput
-                  style={styles.input}
+                  style={{
+                    width: "100%",
+                    color: "#222",
+                    borderRadius: hp('2%'),
+                    borderWidth: hp('0.2%'),
+                    borderColor: "#CCC",
+                    paddingHorizontal: hp('2%'),
+                    marginVertical: hp('2%')
+                  }}
                   onChangeText={(jump_num) => { this.setState({ jump_num }) }}
                   value={this.state.jump_num}
-                  placeholder="Go"
-                  keyboardType="numeric"
+                  placeholder="Please enter page number..."
+                  keyboardType="phone-pad"
+                  allowFontScaling={false}
                 />
-                <View style={{ width: "5%" }} />
-                <Button title="jump" onPress={() => this.setState({ num: parseInt(this.state.jump_num) })} />
 
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginVertical: hp('1%')
+                  }}>
+
+                  {/* Cancel Button */}
+                  <TouchableOpacity
+                    onPress={() => this.setState({ Popup: false })}
+                    style={{
+                      width: wp("35%"),
+                      height: hp('5%'),
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      borderRadius: hp('0.8%'),
+                      borderWidth: hp("0.2%"),
+                      borderColor: "rgba(255, 0, 0, 1)"
+                    }}>
+                    <Text allowFontScaling={false}
+                      style={{
+                        fontSize: hp('2%'),
+                        textAlign: 'center',
+                        color: "rgba(255, 0, 0, 1)",
+                        alignSelf: "center",
+                        fontFamily: 'Roboto-Regular',
+                      }}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  {/* Yes Button */}
+                  <TouchableOpacity
+                    onPress={() => this.setState({ num: parseInt(this.state.jump_num), Popup: false })}
+                    style={{
+                      width: wp("35%"),
+                      height: hp('5%'),
+                      alignSelf: 'center',
+                      backgroundColor: "rgba(99, 96, 255, 1)",
+                      justifyContent: 'center',
+                      borderRadius: hp('0.8%'),
+                    }}>
+                    <Text allowFontScaling={false}
+                      style={{
+                        fontSize: hp('2%'),
+                        textAlign: 'center',
+                        color: "#FFF",
+                        alignSelf: "center",
+                        fontFamily: 'Roboto-Regular',
+                      }}>Jump</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-
-            {/* sclae */}
-            <View style={{ justifyContent: "space-around", flexDirection: "row", alignSelf: "center" }}>
-              <Slider
-                step={0.05}
-                minimumValue={0.5}
-                maximumValue={1.5}
-                thumbTintColor={"blue"}
-                minimumTrackTintColor="blue"
-                onValueChange={(ChangedValue) => this.setState({ SliderValue: ChangedValue })}
-                value={this.state.SliderValue}
-                style={{ width: '85%' }}
-              />
-              <Text>{ptr_zoom}%</Text>
-
-            </View>
-          </>
-
+          </Modal>
         }
       </View>
     )
@@ -194,9 +316,7 @@ export default class PDFExample extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginTop: 25,
+    backgroundColor: "#FFF"
   },
   pdf: {
     flex: 1,
@@ -206,167 +326,19 @@ const styles = StyleSheet.create({
   input: {
     height: 40,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    paddingHorizontal: hp('2%'),
+    backgroundColor: "#fff",
+    marginVertical: hp('1%'),
+    alignItems: "center"
+  },
+  backButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: hp('4.5%'),
+    height: hp('4.5%'),
+    borderRadius: hp('4.5%')
+  },
 });
-
-
-// import React from 'react';
-// import {
-//   StyleSheet,
-//   TouchableHighlight,
-//   Dimensions,
-//   SafeAreaView,
-//   View,
-//   Text,
-//   TextInput
-// } from 'react-native';
-
-// import Pdf from 'react-native-pdf';
-
-// const WIN_WIDTH = Dimensions.get('window').width;
-
-
-// export default class PDFExample extends React.Component {
-//   constructor(props) {
-//     super(props);
-//     this.state = {
-//       page: 1,
-//       scale: 1,
-//       numberOfPages: 0,
-//       horizontal: false,
-//       width: WIN_WIDTH
-//     };
-//     this.pdf = null;
-//   }
-
-//   prePage = () => {
-//     let prePage = this.state.page > 1 ? this.state.page - 1 : 1;
-//     this.pdf.setPage(prePage);
-//     console.log(`prePage: ${prePage}`);
-//   };
-
-//   nextPage = () => {
-//     const sum = this.state.page + this.state.search;
-//     let nextPage = sum > this.state.numberOfPages ? this.state.numberOfPages : sum;
-//     this.pdf.setPage(nextPage);
-//     console.log(`nextPage: ${nextPage}`);
-//     console.log(`sum: ${sum}`);
-//   };
-
-//   zoomOut = () => {
-//     let scale = this.state.scale > 1 ? this.state.scale / 1.2 : 1;
-//     this.setState({ scale: scale });
-//     console.log(`zoomOut scale: ${scale}`);
-//   };
-
-//   zoomIn = () => {
-//     let scale = this.state.scale * 1.2;
-//     scale = scale > 3 ? 3 : scale;
-//     this.setState({ scale: scale });
-//     console.log(`zoomIn scale: ${scale}`);
-//   };
-
-//   switchHorizontal = () => {
-//     this.setState({ horizontal: !this.state.horizontal, page: this.state.page });
-//   };
-
-//   render() {
-//     let source = { uri: 'https://goalkicker.com/DotNETFrameworkBook/DotNETFrameworkNotesForProfessionals.pdf', cache: true };
-
-//     return (
-//       <SafeAreaView style={styles.container}>
-//         <View style={{ flexDirection: 'row' }}>
-//           <TouchableHighlight disabled={this.state.page === 1}
-//             style={this.state.page === 1 ? styles.btnDisable : styles.btn}
-//             onPress={() => this.prePage()}>
-//             <Text style={styles.btnText}>{'-'}</Text>
-//           </TouchableHighlight>
-//           <View style={styles.btnText}><Text style={styles.btnText}>Page</Text></View>
-//           <View
-//             style={this.state.page === this.state.numberOfPages ? styles.btnDisable : styles.btn}>
-//             <TextInput
-//               onChangeText={(search) => {
-//                 this.setState({ search })
-//               }}
-//               value={this.state.search}
-//               returnKeyType="search"
-//               keyboardType="phone-pad"
-//             />
-//             <TouchableHighlight
-//               disabled={this.state.page === this.state.numberOfPages}
-//               style={this.state.page === this.state.numberOfPages ? styles.btnDisable : styles.btn}
-//               testID="nextPage"
-//               onPress={() => this.nextPage()}>
-//               <Text style={styles.btnText}>{'-'}</Text>
-//             </TouchableHighlight>
-//           </View>
-//           <TouchableHighlight disabled={this.state.scale === 1}
-//             style={this.state.scale === 1 ? styles.btnDisable : styles.btn}
-//             onPress={() => this.zoomOut()}>
-//             <Text style={styles.btnText}>{'-'}</Text>
-//           </TouchableHighlight>
-//           <View style={styles.btnText}><Text style={styles.btnText}>Scale</Text></View>
-//           <TouchableHighlight disabled={this.state.scale >= 3}
-//             style={this.state.scale >= 3 ? styles.btnDisable : styles.btn}
-//             onPress={() => this.zoomIn()}>
-//             <Text style={styles.btnText}>{'+'}</Text>
-//           </TouchableHighlight>
-//           <View style={styles.btnText}><Text style={styles.btnText}>{'Horizontal:'}</Text></View>
-//           <TouchableHighlight style={styles.btn} onPress={() => this.switchHorizontal()}>
-//             {!this.state.horizontal ? (<Text style={styles.btnText}>{'false'}</Text>) : (
-//               <Text style={styles.btnText}>{'true'}</Text>)}
-//           </TouchableHighlight>
-
-//         </View>
-//         <View style={{ flex: 1, width: this.state.width }}>
-//           <Pdf ref={(pdf) => {
-//             this.pdf = pdf;
-//           }}
-//             source={source}
-//             scale={this.state.scale}
-//             horizontal={this.state.horizontal}
-//             onLoadComplete={(numberOfPages, filePath, { width, height }, tableContents) => {
-//               this.setState({
-//                 numberOfPages: numberOfPages
-//               });
-//               console.log(`total page count: ${numberOfPages}`);
-//               console.log(tableContents);
-//             }}
-//             onPageChanged={(page, numberOfPages) => {
-//               this.setState({
-//                 page: page
-//               });
-//               console.log(`current page: ${page}`);
-//             }}
-//             onError={(error) => {
-//               console.log(error);
-//             }}
-//             style={{ flex: 1 }}
-//           />
-//         </View>
-//       </SafeAreaView>
-//     )
-//   }
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     justifyContent: 'flex-start',
-//     alignItems: 'center',
-//     marginTop: 25,
-//   },
-//   btn: {
-//     margin: 2,
-//     padding: 2,
-//     backgroundColor: "aqua",
-//   },
-//   btnDisable: {
-//     margin: 2,
-//     padding: 2,
-//     backgroundColor: "gray",
-//   },
-//   btnText: {
-//     margin: 2,
-//     padding: 2,
-//   }
-// });
