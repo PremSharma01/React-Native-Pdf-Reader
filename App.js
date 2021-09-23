@@ -18,6 +18,8 @@ import {
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Foundation from 'react-native-vector-icons/Foundation';
 import * as Animatable from 'react-native-animatable';
+import Slider from 'react-native-fluid-slider';
+import RNListSlider from 'react-native-list-slider';
 // pdf uri
 const source = { uri: 'https://books.goalkicker.com/ReactNativeBook/ReactNativeNotesForProfessionals.pdf', cache: true };
 
@@ -28,92 +30,95 @@ export default class PDFExample extends React.Component {
     SliderValue: 1,
     jump_num: "", progress: 0,
     book_mark: "'',1,5,25,62,75,91",
-    show_bk:false
+    show_bk: false,
+    value: 0
   }
+
+  onValueChanged = value => this.setState({ value });
 
   // book mark ui
   renderItem = ({ item, index }) => {
     if (index !== 0) return (
       <View >
-           <Animatable.View animation={"slideInUp"} delay={150} >
+        <Animatable.View animation={"slideInUp"} delay={150} >
           <View style={{
-          flexDirection: 'row',
-          justifyContent: "space-around",
-          backgroundColor: "#fff",
-          marginVertical: hp('1%'),
-          alignItems: "center"
-        }}>
+            flexDirection: 'row',
+            justifyContent: "space-around",
+            backgroundColor: "#fff",
+            marginVertical: hp('1%'),
+            alignItems: "center"
+          }}>
 
-          {/* Bookmark Button */}
-          <TouchableOpacity
-            style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)" }]}
-            onPress={async () => {
-              let newstr = await this.state.book_mark
-              let array = await newstr.split(',')
-              let index = await array.indexOf(item.toString())
-              array.splice(index, 1)
-              this.setState({ book_mark: array.toString() })
+            {/* Bookmark Button */}
+            <TouchableOpacity
+              style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)" }]}
+              onPress={async () => {
+                let newstr = await this.state.book_mark
+                let array = await newstr.split(',')
+                let index = await array.indexOf(item.toString())
+                array.splice(index, 1)
+                this.setState({ book_mark: array.toString() })
+              }}
+              onLongPress={() => this.setState({ show_bk: !this.state.show_bk })}
+            >
+              <FontAwesome
+                name={'bookmark-o'}
+                color={"#FFF"}
+                size={hp('2.2%')}
+              />
+            </TouchableOpacity>
+
+            <Text style={{ alignSelf: "center" }}>{item}</Text>
+
+            {/* Bookmark Button */}
+            <TouchableOpacity
+              style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)" }]}
+              onPress={() => this.setState({ show_bk: false, num: parseInt(item), })}
+            >
+              <Foundation
+                name={'page-search'}
+                color={"#FFF"}
+                size={hp('2.2%')}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <Pdf
+            key={index}
+            source={source}
+            onLoadComplete={(numberOfPages, filePath) => {
+              console.log(`number of pages: ${numberOfPages}`);
             }}
-            onLongPress={() => this.setState({ show_bk: !this.state.show_bk })}
-          >
-            <FontAwesome
-              name={'bookmark-o'}
-              color={"#FFF"}
-              size={hp('2.2%')}
-            />
-          </TouchableOpacity>
+            onPageChanged={(page, numberOfPages) => {
+              console.log(`current page: ${page}`);
+            }}
+            onError={(error) => {
+              console.log(error);
+            }}
+            singlePage
+            horizontal
+            page={parseInt(item)}
+            onPressLink={(uri) => {
+              console.log(`Link presse: ${uri}`)
+            }}
+            style={[styles.pdf]} />
+        </Animatable.View>
 
-          <Text style={{ alignSelf: "center" }}>{item}</Text>
-
-          {/* Bookmark Button */}
-          <TouchableOpacity
-            style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)" }]}
-            onPress={() => this.setState({show_bk:false,num: parseInt(item),})}
-          >
-            <Foundation
-              name={'page-search'}
-              color={"#FFF"}
-              size={hp('2.2%')}
-            />
-          </TouchableOpacity>
-        </View>
-
-        <Pdf
-          key={index}
-          source={source}
-          onLoadComplete={(numberOfPages, filePath) => {
-            console.log(`number of pages: ${numberOfPages}`);
-          }}
-          onPageChanged={(page, numberOfPages) => {
-            console.log(`current page: ${page}`);
-          }}
-          onError={(error) => {
-            console.log(error);
-          }}
-          singlePage
-          horizontal
-          page={parseInt(item)}
-          onPressLink={(uri) => {
-            console.log(`Link presse: ${uri}`)
-          }}
-          style={[styles.pdf]} />
-         </Animatable.View>
-       
       </View>
     )
   }
-  animation=async(page)=> {
+  animation = async (page) => {
     if (page !== this.state.num) {
-        if(page>this.state.num) this.setState({nextpage:true})
-        else this.setState({nextpage:false})
-        this.setState({ num: page, progress: parseFloat((this.state.num / this.state.total * 1).toFixed(1)),animation:true})
+      if (page > this.state.num) this.setState({ nextpage: true })
+      else this.setState({ nextpage: false })
+      this.setState({ num: page, progress: parseFloat((this.state.num / this.state.total * 1).toFixed(1)), animation: true })
     } else {
-      this.setState({animation:false})
+      this.setState({ animation: false })
 
     }
   }
-  showmenu=()=>{
-  this.setState({showbtn:!this.state.showbtn})
+  showmenu = () => {
+    this.setState({ showbtn: !this.state.showbtn })
 
   }
   render() {
@@ -124,19 +129,19 @@ export default class PDFExample extends React.Component {
       <View style={styles.container}>
 
         {/* Header */}
-           <Animatable.View animation={"slideInDown"} delay={250} style={styles.header}>
-            {/* Progress */}
-            <Animatable.View animation={"slideInLeft"}  delay={250}>
-               <TouchableOpacity
-               onPress={() => this.setState({ Popup: true })}
-               style={{
-                 backgroundColor: "rgba(244, 244, 244, 1)",
-                 height: hp('0.5%'),
-                 width: wp('80%'),
-                 borderRadius: hp('0.5%'),
-                 borderColor: 'rgba(244, 244, 244, 1)',
-               }}>
-             
+        <Animatable.View animation={"slideInDown"} delay={250} style={styles.header}>
+          {/* Progress */}
+          <Animatable.View animation={"slideInLeft"} delay={250}>
+            <TouchableOpacity
+              onPress={() => this.setState({ Popup: true })}
+              style={{
+                backgroundColor: "rgba(244, 244, 244, 1)",
+                height: hp('0.5%'),
+                width: wp('80%'),
+                borderRadius: hp('0.5%'),
+                borderColor: 'rgba(244, 244, 244, 1)',
+              }}>
+
               <View
                 style={{
                   width: `${(this.state.num / this.state.total * 100).toFixed(0)}%`,
@@ -145,43 +150,74 @@ export default class PDFExample extends React.Component {
                   borderRadius: hp('0.5%')
                 }}>
               </View>
-              </TouchableOpacity>
-            </Animatable.View>
+            </TouchableOpacity>
+          </Animatable.View>
 
-            {/* Bookmark Button */}
-            <Animatable.View animation={"slideInRight"} delay={250}>
-             <TouchableOpacity
-             style={[styles.backButton, { backgroundColor: this.state.book_mark.split(',').includes(this.state.num.toString()) ? "rgba(99, 96, 255, 1)" : "rgba(244, 244, 244, 1)" }]}
-             onPress={async () => {
-               let newstr = await this.state.book_mark
-               let array = await newstr.split(',')
-               if (array.includes(this.state.num.toString())) {
-                 let index = await array.indexOf(this.state.num.toString())
-                 array.splice(index, 1)
-               }
-               else {
-                 array.push(this.state.num)
-               }
-               this.setState({ book_mark: array.toString() })
-             }}
-             onLongPress={() => this.setState({ show_bk: !this.state.show_bk,showbtn:false })}
-           >
-           
+
+
+          {/* Bookmark Button */}
+          <Animatable.View animation={"slideInRight"} delay={250}>
+            <TouchableOpacity
+              style={[styles.backButton, { backgroundColor: this.state.book_mark.split(',').includes(this.state.num.toString()) ? "rgba(99, 96, 255, 1)" : "rgba(244, 244, 244, 1)" }]}
+              onPress={async () => {
+                let newstr = await this.state.book_mark
+                let array = await newstr.split(',')
+                if (array.includes(this.state.num.toString())) {
+                  let index = await array.indexOf(this.state.num.toString())
+                  array.splice(index, 1)
+                }
+                else {
+                  array.push(this.state.num)
+                }
+                this.setState({ book_mark: array.toString() })
+              }}
+              onLongPress={() => this.setState({ show_bk: !this.state.show_bk, showbtn: false })}
+            >
+
               <FontAwesome
                 name={'bookmark-o'}
                 color={this.state.book_mark.split(',').includes(this.state.num.toString()) ? "#FFF" : 'rgba(41, 45, 50, 1)'}
                 size={hp('2.2%')}
               />
             </TouchableOpacity>
-            </Animatable.View>
           </Animatable.View>
-        
+        </Animatable.View>
+
+        <View style={{
+          width: '100%',
+          backgroundColor: "#222"
+        }}>
+          <Text style={{
+            fontSize: 40,
+            textAlign: 'center',
+            margin: 10,
+            color: '#ee6d51',
+          }}>
+            {this.state.value.toFixed()}
+          </Text>
+          <Slider
+            maximumValue={200}
+            value={this.state.value}
+            onValueChange={value => this.setState({ value })}
+            onSlidingComplete={(value) => { console.log(value) }}
+          />
+        </View>
+
+        <View>
+          <View>
+            <Text>Value: {this.state.value}</Text>
+          </View>
+          <RNListSlider
+            value={this.state.value}
+            onValueChange={this.onValueChanged}
+          />
+        </View>
 
         {this.state.animation ?
-          <Animatable.View animation={this.state.nextpage?"flipInY":"flipOutY"}
-          delay={150} 
-          style={{flex:1}} direction="alternate"
-          easing="ease-in-out-sine"
+          <Animatable.View animation={this.state.nextpage ? "flipInY" : "flipOutY"}
+            delay={150}
+            style={{ flex: 1 }} direction="alternate"
+            easing="ease-in-out-sine"
             onAnimationEnd={() => this.setState({ animation: false })}>
             <Pdf
               source={source}
@@ -191,18 +227,17 @@ export default class PDFExample extends React.Component {
               }}
               singlePage
               // horizontal
-              page={this.state.nextpage?this.state.num:this.state.num+1}
+              page={this.state.nextpage ? this.state.num : this.state.num + 1}
               onPressLink={(uri) => {
                 console.log(`Link presse: ${uri}`)
               }}
               style={[styles.pdf]} />
-              {/* <View  style={[styles.pdf]}/> */}
           </Animatable.View>
           :
           !this.state.show_bk ?
             <>
               {!this.state.animation_first ? <Animatable.View animation={"flipInX"} ease-in-out-expo direction="alternate" style={[styles.pdf]}
-                        delay={250}  onAnimationEnd={() => this.setState({ animation_first: true })}>
+                delay={250} onAnimationEnd={() => this.setState({ animation_first: true })}>
 
                 <Pdf
                   source={source}
@@ -223,12 +258,12 @@ export default class PDFExample extends React.Component {
                   onLoadComplete={(numberOfPages, filePath) => {
                     this.setState({ total: numberOfPages })
                   }}
-                  onPageChanged={async(page, numberOfPages) => {
-                    if(page!==1&&numberOfPages!==1){
+                  onPageChanged={async (page, numberOfPages) => {
+                    if (page !== 1 && numberOfPages !== 1) {
                       this.animation(page)
-                     }
+                    }
                   }}
-                
+
                   onError={(error) => {
                     console.log(error);
                   }}
@@ -236,7 +271,7 @@ export default class PDFExample extends React.Component {
                   enablePaging
                   page={this.state.num}
                   horizontal
-                  onPageSingleTap={(page)=>this.showmenu()}
+                  onPageSingleTap={(page) => this.showmenu()}
                   onPressLink={(uri) => {
                     console.log(`Link presse: ${uri}`)
                   }}
@@ -252,25 +287,74 @@ export default class PDFExample extends React.Component {
               keyExtractor={(item, index) => index.toString()}
             />
         }
-     <Animatable.View animation={this.state.showbtn?"slideInUp":"slideOutDown"}  delay={250} style={{flexDirection:"row",justifyContent:"space-around",marginBottom:10}} >
-        <Animatable.View animation={this.state.showbtn?"slideInLeft":"slideOutLeft"}  delay={250}  >
-           <TouchableOpacity
-            style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)"  }]}
-            onPress={() =>this.animation(this.state.num-1)} 
+
+        <Animatable.View
+          animation={this.state.showbtn ? "slideInUp" : "slideOutDown"} delay={250}
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            paddingHorizontal: hp('2%'),
+            paddingVertical: hp('1%')
+          }}>
+          <Animatable.View
+            animation={this.state.showbtn ? "slideInLeft" : "slideOutLeft"} delay={250}>
+            <TouchableOpacity
+              onPress={() => this.animation(this.state.num - 1)}
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 1)",
+                borderRadius: hp('1%'),
+                paddingVertical: hp('2%'),
+                width: wp('35%'),
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1,
+                },
+                shadowOpacity: 0.20,
+                shadowRadius: 1.41,
+                elevation: 2,
+              }}>
+              <Text
+                allowFontScaling={false}
+                style={{
+                  fontSize: hp('2.4%'),
+                  color: "rgba(130, 130, 130, 1)",
+                  lineHeight: hp('3%')
+                }}>Previous</Text>
+            </TouchableOpacity>
+          </Animatable.View>
+          <Animatable.View
+            animation={this.state.showbtn ? "slideInRight" : "slideOutRight"} delay={250}
           >
-           <Text>{"<<"}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => this.animation(this.state.num + 1)}
+              style={{
+                backgroundColor: "rgba(99, 96, 255, 1)",
+                borderRadius: hp('1%'),
+                paddingVertical: hp('2%'),
+                width: wp('35%'),
+                alignItems: "center",
+                shadowColor: "#000",
+                shadowOffset: {
+                  width: 0,
+                  height: 1,
+                },
+                shadowOpacity: 0.20,
+                shadowRadius: 1.41,
+                elevation: 2,
+              }}>
+              <Text
+                allowFontScaling={false}
+                style={{
+                  fontSize: hp('2.4%'),
+                  color: "#FFF",
+                  lineHeight: hp('3%')
+                }}>Next</Text>
+            </TouchableOpacity>
+          </Animatable.View>
         </Animatable.View>
-       
-        <Animatable.View animation={this.state.showbtn?"slideInRight":"slideOutRight"}  delay={250} >
-           <TouchableOpacity
-            style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)"  }]} 
-            onPress={() => this.animation(this.state.num+1)}  
-          >
-           <Text>{">>"}</Text>
-          </TouchableOpacity>
-        </Animatable.View>
-        </Animatable.View>
+
         {this.state.Popup &&
           <Modal
             animationType="fade"
@@ -394,13 +478,13 @@ export default class PDFExample extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:  "#fff"
+    backgroundColor: "#fff"
   },
   pdf: {
     flex: 1,
     width: Dimensions.get('window').width,
     height: Dimensions.get('window').height,
-    backgroundColor:  "#fff"
+    backgroundColor: "#fff"
   },
   input: {
     height: 40,
@@ -409,7 +493,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: "space-between",
     paddingHorizontal: hp('2%'),
-    backgroundColor:   "#fff",
+    backgroundColor: "#fff",
     marginVertical: hp('1%'),
     alignItems: "center"
   },
