@@ -112,6 +112,10 @@ export default class PDFExample extends React.Component {
 
     }
   }
+  showmenu=()=>{
+  this.setState({showbtn:!this.state.showbtn})
+
+  }
   render() {
     // slider %
     const ptr_zoom = (this.state.SliderValue / 1.5 * 100).toFixed(0)
@@ -120,7 +124,6 @@ export default class PDFExample extends React.Component {
       <View style={styles.container}>
 
         {/* Header */}
-        {!this.state.show_bk &&
            <Animatable.View animation={"slideInDown"} delay={250} style={styles.header}>
             {/* Progress */}
             <Animatable.View animation={"slideInLeft"}  delay={250}>
@@ -161,7 +164,7 @@ export default class PDFExample extends React.Component {
                }
                this.setState({ book_mark: array.toString() })
              }}
-             onLongPress={() => this.setState({ show_bk: !this.state.show_bk })}
+             onLongPress={() => this.setState({ show_bk: !this.state.show_bk,showbtn:false })}
            >
            
               <FontAwesome
@@ -172,7 +175,7 @@ export default class PDFExample extends React.Component {
             </TouchableOpacity>
             </Animatable.View>
           </Animatable.View>
-        }
+        
 
         {this.state.animation ?
           <Animatable.View animation={this.state.nextpage?"flipInY":"flipOutY"}
@@ -218,11 +221,9 @@ export default class PDFExample extends React.Component {
                 <Pdf
                   source={source}
                   onLoadComplete={(numberOfPages, filePath) => {
-                    console.log(`number of pages: ${numberOfPages}`);
                     this.setState({ total: numberOfPages })
                   }}
                   onPageChanged={async(page, numberOfPages) => {
-                    console.log(`current page: ${page}`);
                     if(page!==1&&numberOfPages!==1){
                       this.animation(page)
                      }
@@ -235,6 +236,7 @@ export default class PDFExample extends React.Component {
                   enablePaging
                   page={this.state.num}
                   horizontal
+                  onPageSingleTap={(page)=>this.showmenu()}
                   onPressLink={(uri) => {
                     console.log(`Link presse: ${uri}`)
                   }}
@@ -250,8 +252,8 @@ export default class PDFExample extends React.Component {
               keyExtractor={(item, index) => index.toString()}
             />
         }
-      {     !this.state.show_bk ? <Animatable.View animation={"slideInUp"}  delay={250} style={{flexDirection:"row",justifyContent:"space-around",marginBottom:10}}>
-        <Animatable.View animation={"slideInLeft"}  delay={250}  >
+     <Animatable.View animation={this.state.showbtn?"slideInUp":"slideOutDown"}  delay={250} style={{flexDirection:"row",justifyContent:"space-around",marginBottom:10}} >
+        <Animatable.View animation={this.state.showbtn?"slideInLeft":"slideOutLeft"}  delay={250}  >
            <TouchableOpacity
             style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)"  }]}
             onPress={() =>this.animation(this.state.num-1)} 
@@ -260,7 +262,7 @@ export default class PDFExample extends React.Component {
           </TouchableOpacity>
         </Animatable.View>
        
-        <Animatable.View animation={"slideInRight"}  delay={250} >
+        <Animatable.View animation={this.state.showbtn?"slideInRight":"slideOutRight"}  delay={250} >
            <TouchableOpacity
             style={[styles.backButton, { backgroundColor: "rgba(99, 96, 255, 1)"  }]} 
             onPress={() => this.animation(this.state.num+1)}  
@@ -268,8 +270,7 @@ export default class PDFExample extends React.Component {
            <Text>{">>"}</Text>
           </TouchableOpacity>
         </Animatable.View>
-        </Animatable.View>:null
-       }
+        </Animatable.View>
         {this.state.Popup &&
           <Modal
             animationType="fade"
