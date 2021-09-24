@@ -244,7 +244,10 @@ export default class PDFExample extends React.Component {
                     onError={(error) => {
                       console.log(error);
                     }}
+                    onScaleChanged={(SliderValue)=>{this.setState({SliderValue:SliderValue})}}
                     scale={this.state.SliderValue}
+                    maxScale={2}
+                    minScale={1}
                     enablePaging
                     page={this.state.num}
                     horizontal
@@ -283,7 +286,7 @@ export default class PDFExample extends React.Component {
             // </Text>}
             style={{ width: 40, backgroundColor: 'rgba(0,0,0,.7)', height: "50%" }}
             value={this.state.SliderValue}
-            horizontal
+            
             onValueChange={SliderValue => { this.setState({ SliderValue }) }}
             minimumValue={1} />
         </Animatable.View>}
