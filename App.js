@@ -8,7 +8,8 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  Modal
+  Modal,
+  ScrollView
 } from 'react-native';
 import Pdf from 'react-native-pdf';
 import {
@@ -31,7 +32,11 @@ export default class PDFExample extends React.Component {
     jump_num: "", progress: 0,
     book_mark: "'',1,5,25,62,75,91",
     show_bk: false,
-    value: 0
+    value: 0,
+    animation_next: ["slideInRight", "zoomInRight", "flipInY", "bounceInRight", "fadeInRightBig", "fadeInRight", "lightSpeedIn","flash","jello","pulse","rotate","rubberBand","shake","swing","tada","wobble"],
+    animation_back: ["slideInLeft", "zoomInLeft", "flipInY", "bounceInLeft", "fadeInLeftBig", "fadeInLeft", "lightSpeedIn","flash","jello","pulse","rotate","rubberBand","shake","swing","tada","wobble"],
+    back_ani: 0,
+    next_ani: 0
   }
 
   onValueChanged = value => this.setState({ value });
@@ -122,7 +127,7 @@ export default class PDFExample extends React.Component {
 
   }
   render() {
-  
+
 
     return (
       <View style={styles.container}>
@@ -183,8 +188,8 @@ export default class PDFExample extends React.Component {
 
 
         {this.state.animation ?
-          <Animatable.View animation={this.state.nextpage ? "flipInY" : "flipOutY"}
-            delay={250}
+          <Animatable.View animation={this.state.nextpage ? this.state.animation_next[this.state.next_ani] : this.state.animation_back[this.state.back_ani]}
+            delay={150}
             style={{ flex: 1 }} direction="alternate"
             easing="ease-in-out-sine"
             onAnimationEnd={() => this.setState({ animation: false })}>
@@ -194,9 +199,10 @@ export default class PDFExample extends React.Component {
               onError={(error) => {
                 console.log(error);
               }}
-              singlePage
-              // horizontal
+
+              horizontal
               scale={this.state.SliderValue}
+              enablePaging
 
               page={this.state.nextpage ? this.state.num : this.state.num + 1}
               onPressLink={(uri) => {
@@ -232,9 +238,7 @@ export default class PDFExample extends React.Component {
                       this.setState({ total: numberOfPages })
                     }}
                     onPageChanged={async (page, numberOfPages) => {
-                      if (page !== 1 && numberOfPages !== 1) {
-                        this.animation(page)
-                      }
+                      this.setState({ num: page })
                     }}
 
                     onError={(error) => {
@@ -263,26 +267,26 @@ export default class PDFExample extends React.Component {
               keyExtractor={(item, index) => index.toString()}
             />
         }
-      
-      
 
 
-    
-       { <Animatable.View
-        animation={this.state.showbtn ? "zoomIn" : "zoomOut"} delay={250}
-        style={{width:"10%",height:"30%",position:"absolute",alignSelf: "flex-end", bottom: "10%",right:"1%"}}>
-           <BigSlider
-          maximumValue={2}
-          trackStyle={{ backgroundColor: 'rgba(208, 88, 10, 0.6)' }}
-          renderLabel={() => <Text style={{textAlign:'center',marginVertical:"2%",marginHorizontal:"2%"}}>
-           {(this.state.SliderValue / 2 * 100).toFixed(0)}%
-        </Text>}
-          style={{ width: 40, backgroundColor: 'rgba(0,0,0,.7)', height:"50%"}}
-          value={this.state.SliderValue}
-          horizontal
-          onValueChange={SliderValue => {  this.setState({ SliderValue })}}
-          minimumValue={0.7} />
-          </Animatable.View>}
+
+
+
+        {<Animatable.View
+          animation={this.state.showbtn ? "zoomIn" : "zoomOut"} delay={250}
+          style={{ width: "10%", height: "30%", position: "absolute", alignSelf: "flex-end", bottom: "10%", right: "1%" }}>
+          <BigSlider
+            maximumValue={2}
+            trackStyle={{ backgroundColor: 'rgba(208, 88, 10, 0.6)' }}
+            //   renderLabel={() => <Text style={{textAlign:'center',marginVertical:"2%",marginHorizontal:"2%"}}>
+            //    {(this.state.SliderValue / 2 * 100).toFixed(0)}%
+            // </Text>}
+            style={{ width: 40, backgroundColor: 'rgba(0,0,0,.7)', height: "50%" }}
+            value={this.state.SliderValue}
+            horizontal
+            onValueChange={SliderValue => { this.setState({ SliderValue }) }}
+            minimumValue={1} />
+        </Animatable.View>}
         <Animatable.View
           animation={this.state.showbtn ? "slideInUp" : "slideOutDown"} delay={250}
           style={{
@@ -291,12 +295,13 @@ export default class PDFExample extends React.Component {
             paddingHorizontal: hp('2%'),
             paddingVertical: hp('1%')
           }}>
-              
-             
+
+
           <Animatable.View
             animation={this.state.showbtn ? "slideInLeft" : "slideOutLeft"} delay={250}>
             <TouchableOpacity
               onPress={() => this.animation(this.state.num - 1)}
+              onLongPress={() => this.setState({ select_back_ani: true })}
               style={{
                 backgroundColor: "rgba(255, 255, 255, 1)",
                 borderRadius: hp('1%'),
@@ -326,6 +331,7 @@ export default class PDFExample extends React.Component {
           >
             <TouchableOpacity
               onPress={() => this.animation(this.state.num + 1)}
+              onLongPress={() => this.setState({ select_next_ani: true })}
               style={{
                 backgroundColor: "rgba(99, 96, 255, 1)",
                 borderRadius: hp('1%'),
@@ -470,6 +476,200 @@ export default class PDFExample extends React.Component {
             </View>
           </Modal>
         }
+        {this.state.Popup &&
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={this.state.Popup}
+            onRequestClose={() => {
+              this.setState({ Popup: false })
+            }}
+          >
+            <View style={{
+              flex: 1,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: hp('0.2%')
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              backgroundColor: "rgba(50, 50, 50, 0.8)",
+              justifyContent: "center"
+            }}>
+              <TouchableOpacity onPress={() => this.setState({ Popup: false })}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute"
+                }} />
+              <View style={{
+                backgroundColor: "#FFF",
+                borderRadius: hp('2%'),
+                paddingHorizontal: hp('1.5%'),
+                width: '85%',
+                alignSelf: "center",
+              }}>
+
+                <Text allowFontScaling={false}
+                  style={{
+                    textAlign: "center",
+                    fontSize: hp('2%'),
+                    fontFamily: "Roboto-Regular",
+                    marginVertical: hp('2%')
+                  }} >Jump To</Text>
+
+                <TextInput
+                  style={{
+                    width: "100%",
+                    color: "#222",
+                    borderRadius: hp('2%'),
+                    borderWidth: hp('0.2%'),
+                    borderColor: "#CCC",
+                    paddingHorizontal: hp('2%'),
+                    marginVertical: hp('2%')
+                  }}
+                  onChangeText={(jump_num) => { this.setState({ jump_num }) }}
+                  value={this.state.jump_num}
+                  placeholder="Please enter page number..."
+                  keyboardType="phone-pad"
+                  allowFontScaling={false}
+                />
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    marginVertical: hp('1%')
+                  }}>
+
+                  {/* Cancel Button */}
+                  <TouchableOpacity
+                    onPress={() => this.setState({ Popup: false })}
+                    style={{
+                      width: wp("35%"),
+                      height: hp('5%'),
+                      alignSelf: 'center',
+                      justifyContent: 'center',
+                      borderRadius: hp('0.8%'),
+                      borderWidth: hp("0.2%"),
+                      borderColor: "rgba(255, 0, 0, 1)"
+                    }}>
+                    <Text allowFontScaling={false}
+                      style={{
+                        fontSize: hp('2%'),
+                        textAlign: 'center',
+                        color: "rgba(255, 0, 0, 1)",
+                        alignSelf: "center",
+                        fontFamily: 'Roboto-Regular',
+                      }}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  {/* Yes Button */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      this.animation(parseInt(this.state.jump_num))
+                      this.setState({ Popup: false })
+                    }}
+                    style={{
+                      width: wp("35%"),
+                      height: hp('5%'),
+                      alignSelf: 'center',
+                      backgroundColor: "rgba(99, 96, 255, 1)",
+                      justifyContent: 'center',
+                      borderRadius: hp('0.8%'),
+                    }}>
+                    <Text allowFontScaling={false}
+                      style={{
+                        fontSize: hp('2%'),
+                        textAlign: 'center',
+                        color: "#FFF",
+                        alignSelf: "center",
+                        fontFamily: 'Roboto-Regular',
+                      }}>Jump</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        }
+        {(this.state.select_back_ani || this.state.select_next_ani) &&
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={(this.state.select_back_ani || this.state.select_next_ani)}
+            onRequestClose={() => {
+              this.setState({ Popup: false })
+            }}
+          >
+            <View style={{
+              flex: 1,
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: hp('0.2%')
+              },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              backgroundColor: "rgba(50, 50, 50, 0.8)",
+              justifyContent: "center"
+            }}>
+              <TouchableOpacity onPress={() => this.setState({ select_next_ani: false, select_back_ani: false })}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute"
+                }} />
+              <View style={{
+                backgroundColor: "#FFF",
+                borderRadius: hp('2%'),
+                paddingHorizontal: hp('1.5%'),
+                width: '85%',
+                alignSelf: "center",
+              }}>
+                {this.state.select_back_ani &&
+                  <ScrollView>
+                    {this.state.animation_back.map((item, index) => {
+                      return (<TouchableOpacity key={index} onPress={() => this.setState({ back_ani: index , select_next_ani: false, select_back_ani: false })}>
+                        <Text allowFontScaling={false}
+                          style={{
+                            textAlign: "center",
+                            fontSize: hp('2%'),
+                            fontFamily: "Roboto-Regular",
+                            marginVertical: hp('2%'),
+                            color: index == this.state.back_ani ? "blue" : "#222"
+                          }} >{item} {( index == this.state.back_ani?"(Selected)":"")}</Text>
+                      </TouchableOpacity>)
+                    })
+                    }
+                  </ScrollView>
+
+                }{this.state.select_next_ani &&
+                  <ScrollView>
+                    {this.state.animation_next.map((item, index) => {
+                      return (<TouchableOpacity key={index} onPress={() => this.setState({ next_ani: index, select_next_ani: false, select_back_ani: false  })}>
+                        <Text allowFontScaling={false}
+                          style={{
+                            textAlign: "center",
+                            fontSize: hp('2%'),
+                            fontFamily: "Roboto-Regular",
+                            marginVertical: hp('2%'),
+                            color: index == this.state.next_ani ? "blue" : "#222"
+                          }} >{item} {( index == this.state.next_ani?"(Selected)":"")}</Text>
+                      </TouchableOpacity>)
+                    })
+
+
+                    }
+                  </ScrollView>}
+
+              </View>
+            </View>
+          </Modal>
+        }
+
       </View>
     )
   }
