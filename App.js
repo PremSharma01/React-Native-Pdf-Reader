@@ -19,7 +19,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Foundation from 'react-native-vector-icons/Foundation';
 import * as Animatable from 'react-native-animatable';
 import Slider from 'react-native-fluid-slider';
-import RNListSlider from 'react-native-list-slider';
+import BigSlider from 'react-native-big-slider'
 // pdf uri
 const source = { uri: 'https://books.goalkicker.com/ReactNativeBook/ReactNativeNotesForProfessionals.pdf', cache: true };
 
@@ -122,8 +122,7 @@ export default class PDFExample extends React.Component {
 
   }
   render() {
-    // slider %
-    const ptr_zoom = (this.state.SliderValue / 1.5 * 100).toFixed(0)
+  
 
     return (
       <View style={styles.container}>
@@ -135,21 +134,18 @@ export default class PDFExample extends React.Component {
             <TouchableOpacity
               onPress={() => this.setState({ Popup: true })}
               style={{
-                backgroundColor: "rgba(244, 244, 244, 1)",
-                height: hp('0.5%'),
                 width: wp('80%'),
-                borderRadius: hp('0.5%'),
-                borderColor: 'rgba(244, 244, 244, 1)',
               }}>
-
-              <View
-                style={{
-                  width: `${(this.state.num / this.state.total * 100).toFixed(0)}%`,
-                  backgroundColor: "rgba(99, 96, 255, 1)",
-                  height: hp('0.5%'),
-                  borderRadius: hp('0.5%')
-                }}>
-              </View>
+              <Slider
+                maximumValue={this.state.total}
+                minimumValue={1}
+                value={this.state.num}
+                onValueChange={num => { this.animation(num) }}
+                thumbTintColor="rgba(99, 96, 255, 1)"
+                maximumTrackTintColor="rgba(244, 244, 244, 1)"
+                minimumTrackTintColor="rgba(99, 96, 255, 1)"
+              />
+              {/* <Text>{(this.state.num / this.state.total * 100).toFixed(0)}%</Text> */}
             </TouchableOpacity>
           </Animatable.View>
 
@@ -183,39 +179,12 @@ export default class PDFExample extends React.Component {
           </Animatable.View>
         </Animatable.View>
 
-        <View style={{
-          width: '100%',
-          backgroundColor: "#222"
-        }}>
-          <Text style={{
-            fontSize: 40,
-            textAlign: 'center',
-            margin: 10,
-            color: '#ee6d51',
-          }}>
-            {this.state.value.toFixed()}
-          </Text>
-          <Slider
-            maximumValue={200}
-            value={this.state.value}
-            onValueChange={value => this.setState({ value })}
-            onSlidingComplete={(value) => { console.log(value) }}
-          />
-        </View>
 
-        <View>
-          <View>
-            <Text>Value: {this.state.value}</Text>
-          </View>
-          <RNListSlider
-            value={this.state.value}
-            onValueChange={this.onValueChanged}
-          />
-        </View>
+
 
         {this.state.animation ?
           <Animatable.View animation={this.state.nextpage ? "flipInY" : "flipOutY"}
-            delay={150}
+            delay={250}
             style={{ flex: 1 }} direction="alternate"
             easing="ease-in-out-sine"
             onAnimationEnd={() => this.setState({ animation: false })}>
@@ -227,6 +196,8 @@ export default class PDFExample extends React.Component {
               }}
               singlePage
               // horizontal
+              scale={this.state.SliderValue}
+
               page={this.state.nextpage ? this.state.num : this.state.num + 1}
               onPressLink={(uri) => {
                 console.log(`Link presse: ${uri}`)
@@ -248,35 +219,40 @@ export default class PDFExample extends React.Component {
                   singlePage
                   horizontal
                   page={this.state.num}
+                  scale={this.state.SliderValue}
                   onPressLink={(uri) => {
                     console.log(`Link presse: ${uri}`)
                   }}
                   style={styles.pdf} />
               </Animatable.View> :
-                <Pdf
-                  source={source}
-                  onLoadComplete={(numberOfPages, filePath) => {
-                    this.setState({ total: numberOfPages })
-                  }}
-                  onPageChanged={async (page, numberOfPages) => {
-                    if (page !== 1 && numberOfPages !== 1) {
-                      this.animation(page)
-                    }
-                  }}
+                <>
+                  <Pdf
+                    source={source}
+                    onLoadComplete={(numberOfPages, filePath) => {
+                      this.setState({ total: numberOfPages })
+                    }}
+                    onPageChanged={async (page, numberOfPages) => {
+                      if (page !== 1 && numberOfPages !== 1) {
+                        this.animation(page)
+                      }
+                    }}
 
-                  onError={(error) => {
-                    console.log(error);
-                  }}
-                  scale={this.state.SliderValue}
-                  enablePaging
-                  page={this.state.num}
-                  horizontal
-                  onPageSingleTap={(page) => this.showmenu()}
-                  onPressLink={(uri) => {
-                    console.log(`Link presse: ${uri}`)
-                  }}
-                  style={styles.pdf} />
+                    onError={(error) => {
+                      console.log(error);
+                    }}
+                    scale={this.state.SliderValue}
+                    enablePaging
+                    page={this.state.num}
+                    horizontal
+                    onPageSingleTap={(page) => this.showmenu()}
+                    onPressLink={(uri) => {
+                      console.log(`Link presse: ${uri}`)
+                    }}
+                    style={styles.pdf} />
+
+                </>
               }
+
             </>
             :
             <FlatList
@@ -287,7 +263,26 @@ export default class PDFExample extends React.Component {
               keyExtractor={(item, index) => index.toString()}
             />
         }
+      
+      
 
+
+    
+       { <Animatable.View
+        animation={this.state.showbtn ? "zoomIn" : "zoomOut"} delay={250}
+        style={{width:"10%",height:"30%",position:"absolute",alignSelf: "flex-end", bottom: "10%",right:"1%"}}>
+           <BigSlider
+          maximumValue={2}
+          trackStyle={{ backgroundColor: 'rgba(208, 88, 10, 0.6)' }}
+          renderLabel={() => <Text style={{textAlign:'center',marginVertical:"2%",marginHorizontal:"2%"}}>
+           {(this.state.SliderValue / 2 * 100).toFixed(0)}%
+        </Text>}
+          style={{ width: 40, backgroundColor: 'rgba(0,0,0,.7)', height:"50%"}}
+          value={this.state.SliderValue}
+          horizontal
+          onValueChange={SliderValue => {  this.setState({ SliderValue })}}
+          minimumValue={0.7} />
+          </Animatable.View>}
         <Animatable.View
           animation={this.state.showbtn ? "slideInUp" : "slideOutDown"} delay={250}
           style={{
@@ -296,6 +291,8 @@ export default class PDFExample extends React.Component {
             paddingHorizontal: hp('2%'),
             paddingVertical: hp('1%')
           }}>
+              
+             
           <Animatable.View
             animation={this.state.showbtn ? "slideInLeft" : "slideOutLeft"} delay={250}>
             <TouchableOpacity
@@ -447,7 +444,10 @@ export default class PDFExample extends React.Component {
 
                   {/* Yes Button */}
                   <TouchableOpacity
-                    onPress={() => this.setState({ num: parseInt(this.state.jump_num), Popup: false })}
+                    onPress={() => {
+                      this.animation(parseInt(this.state.jump_num))
+                      this.setState({ Popup: false })
+                    }}
                     style={{
                       width: wp("35%"),
                       height: hp('5%'),

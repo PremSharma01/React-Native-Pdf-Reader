@@ -5577,7 +5577,7 @@
     "kleur" "^3.0.3"
     "sisteransi" "^1.0.5"
 
-"prop-types@^15.7.2":
+"prop-types@^15.6.2", "prop-types@^15.7.2":
   "integrity" "sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ=="
   "resolved" "https://registry.npmjs.org/prop-types/-/prop-types-15.7.2.tgz"
   "version" "15.7.2"
@@ -5639,6 +5639,11 @@
   dependencies:
     "prop-types" "^15.7.2"
 
+"react-native-big-slider@^0.1.1":
+  "integrity" "sha512-BmL1VTlF8SdQxYC4VVdpzxk+4ZbmSVGdYmEfzcVDmr4+ITmWpINJfC1YAxcyNmhKnxbJbgtn4eCCPmzHRYaCPw=="
+  "resolved" "https://registry.npmjs.org/react-native-big-slider/-/react-native-big-slider-0.1.1.tgz"
+  "version" "0.1.1"
+
 "react-native-codegen@^0.0.7":
   "integrity" "sha512-dwNgR8zJ3ALr480QnAmpTiqvFo+rDtq6V5oCggKhYFlRjzOmVSFn3YD41u8ltvKS5G2nQ8gCs2vReFFnRGLYng=="
   "resolved" "https://registry.npmjs.org/react-native-codegen/-/react-native-codegen-0.0.7.tgz"
@@ -5647,6 +5652,18 @@
     "flow-parser" "^0.121.0"
     "jscodeshift" "^0.11.0"
     "nullthrows" "^1.1.1"
+
+"react-native-fluid-slider@^1.0.2":
+  "integrity" "sha512-LO7GPiXhjAXpcdx2WPDR1gszBe2rUQqYgdK1H8nMR6Pn6zNzK7SbVzUlauiCzYoCGczApAiLrhDa9QtEYLEYPg=="
+  "resolved" "https://registry.npmjs.org/react-native-fluid-slider/-/react-native-fluid-slider-1.0.2.tgz"
+  "version" "1.0.2"
+  dependencies:
+    "prop-types" "^15.6.2"
+
+"react-native-list-slider@^1.1.1":
+  "integrity" "sha512-PvfnZ/GcEv6huxu6ngDvFEDjtctT/p9ACOzFOf9+mpwA3KeilgQalVEEVFsjA5KluJPMBLr6ohOlAGbQWEMpKA=="
+  "resolved" "https://registry.npmjs.org/react-native-list-slider/-/react-native-list-slider-1.1.1.tgz"
+  "version" "1.1.1"
 
 "react-native-pdf@^6.3.0":
   "integrity" "sha512-iT2GTRw6tMoCO4vRYKwIyXnhQ+XPW8trK+YlbMpsnF8dx2n7ssSdcutuIDnDvZ/fM3CqKJizVSQMWbyOd4O2+w=="
