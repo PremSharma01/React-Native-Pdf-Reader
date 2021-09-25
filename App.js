@@ -19,7 +19,7 @@ import {
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Foundation from 'react-native-vector-icons/Foundation';
 import * as Animatable from 'react-native-animatable';
-import Slider from 'react-native-fluid-slider';
+import Slider from '@react-native-community/slider';
 import BigSlider from 'react-native-big-slider'
 // pdf uri
 const source = { uri: 'https://books.goalkicker.com/ReactNativeBook/ReactNativeNotesForProfessionals.pdf', cache: true };
@@ -33,10 +33,11 @@ export default class PDFExample extends React.Component {
     book_mark: "'',1,5,25,62,75,91",
     show_bk: false,
     value: 0,
-    animation_next: ["slideInRight", "zoomInRight", "flipInY", "bounceInRight", "fadeInRightBig", "fadeInRight", "lightSpeedIn","flash","jello","pulse","rotate","rubberBand","shake","swing","tada","wobble"],
-    animation_back: ["slideInLeft", "zoomInLeft", "flipInY", "bounceInLeft", "fadeInLeftBig", "fadeInLeft", "lightSpeedIn","flash","jello","pulse","rotate","rubberBand","shake","swing","tada","wobble"],
+    animation_next: ["slideInRight", "zoomInRight", "flipInY", "bounceInRight", "fadeInRightBig", "fadeInRight", "lightSpeedIn", "flash", "jello", "pulse", "rotate", "rubberBand", "shake", "swing", "tada", "wobble"],
+    animation_back: ["slideInLeft", "zoomInLeft", "flipInY", "bounceInLeft", "fadeInLeftBig", "fadeInLeft", "lightSpeedIn", "flash", "jello", "pulse", "rotate", "rubberBand", "shake", "swing", "tada", "wobble"],
     back_ani: 0,
-    next_ani: 0
+    next_ani: 0,
+    nextpage: "pulse"
   }
 
   onValueChanged = value => this.setState({ value });
@@ -113,9 +114,9 @@ export default class PDFExample extends React.Component {
     )
   }
   animation = async (page) => {
-    if (page !== this.state.num) {
-      if (page > this.state.num) this.setState({ nextpage: true })
-      else this.setState({ nextpage: false })
+    if (page !== this.state.num&&page) {
+      if (page > this.state.num) this.setState({ nextpage: "slideInRight" })
+      else this.setState({ nextpage: "slideInLeft" })
       this.setState({ num: page, progress: parseFloat((this.state.num / this.state.total * 1).toFixed(1)), animation: true })
     } else {
       this.setState({ animation: false })
@@ -135,23 +136,24 @@ export default class PDFExample extends React.Component {
         {/* Header */}
         <Animatable.View animation={"slideInDown"} delay={250} style={styles.header}>
           {/* Progress */}
-          <Animatable.View animation={"slideInLeft"} delay={250}>
-            <TouchableOpacity
-              onPress={() => this.setState({ Popup: true })}
-              style={{
-                width: wp('80%'),
-              }}>
-              <Slider
-                maximumValue={this.state.total}
-                minimumValue={1}
-                value={this.state.num}
-                onValueChange={num => { this.animation(num) }}
-                thumbTintColor="rgba(99, 96, 255, 1)"
-                maximumTrackTintColor="rgba(244, 244, 244, 1)"
-                minimumTrackTintColor="rgba(99, 96, 255, 1)"
-              />
-              {/* <Text>{(this.state.num / this.state.total * 100).toFixed(0)}%</Text> */}
-            </TouchableOpacity>
+          <Animatable.View animation={"slideInLeft"} delay={250}
+          style={{
+            width: wp('80%'),
+            flexDirection: "row",
+            alignItems: 'center'
+          }}>
+            <Slider
+              style={{ width: "95%" }}
+              maximumValue={this.state.total}
+              onSlidingComplete={(num) => this.animation(parseInt(num))}
+              value={this.state.num}
+              minimumValue={1}
+              step={1}
+              thumbTintColor={"rgba(99, 96, 255, 1)"}
+              minimumTrackTintColor="rgba(99, 96, 255, 1)"
+              maximumTrackTintColor="rgba(244, 244, 244, 1)"
+            />
+            <Text>{(this.state.num / this.state.total * 100).toFixed(0)}%</Text>
           </Animatable.View>
 
 
@@ -187,97 +189,58 @@ export default class PDFExample extends React.Component {
 
 
 
-        {this.state.animation ?
-          <Animatable.View animation={this.state.nextpage ? this.state.animation_next[this.state.next_ani] : this.state.animation_back[this.state.back_ani]}
-            delay={150}
-            style={{ flex: 1 }} direction="alternate"
-            easing="ease-in-out-sine"
-            onAnimationEnd={() => this.setState({ animation: false })}>
-            <Pdf
-              source={source}
+        {!this.state.show_bk ?
 
-              onError={(error) => {
-                console.log(error);
-              }}
+          <View style={{ flex: 1 }}>
+            <Animatable.View
+              animation={this.state.nextpage}
+              delay={150}
+              style={{ flex: 1 }} direction="alternate"
+              easing="ease-in-out-sine"
+              onAnimationEnd={() => this.setState({ nextpage: "" })}>
+              <Pdf
+                source={source}
+                onLoadComplete={(numberOfPages, filePath) => {
+                  this.setState({ total: numberOfPages })
+                }}
+                onPageChanged={async (page, numberOfPages) => {
+                  this.animation(page)
+                }}
+                onError={(error) => {
+                  console.log(error);
+                }}
+                onScaleChanged={(SliderValue) => { this.setState({ SliderValue: SliderValue }) }}
+                scale={this.state.SliderValue}
+                maxScale={2}
+                minScale={1}
+                enablePaging
+                page={this.state.num}
+                horizontal
+                onPageSingleTap={(page) => this.showmenu()}
+                onPressLink={(uri) => {
+                  console.log(`Link presse: ${uri}`)
+                }}
+                style={styles.pdf} />
+            </Animatable.View>
 
-              horizontal
-              scale={this.state.SliderValue}
-              enablePaging
-
-              page={this.state.nextpage ? this.state.num : this.state.num + 1}
-              onPressLink={(uri) => {
-                console.log(`Link presse: ${uri}`)
-              }}
-              style={[styles.pdf]} />
-          </Animatable.View>
+          </View>
           :
-          !this.state.show_bk ?
-            <>
-              {!this.state.animation_first ? <Animatable.View animation={"flipInX"} ease-in-out-expo direction="alternate" style={[styles.pdf]}
-                delay={250} onAnimationEnd={() => this.setState({ animation_first: true })}>
-
-                <Pdf
-                  source={source}
-
-                  onError={(error) => {
-                    console.log(error);
-                  }}
-                  singlePage
-                  horizontal
-                  page={this.state.num}
-                  scale={this.state.SliderValue}
-                  onPressLink={(uri) => {
-                    console.log(`Link presse: ${uri}`)
-                  }}
-                  style={styles.pdf} />
-              </Animatable.View> :
-                <>
-                  <Pdf
-                    source={source}
-                    onLoadComplete={(numberOfPages, filePath) => {
-                      this.setState({ total: numberOfPages })
-                    }}
-                    onPageChanged={async (page, numberOfPages) => {
-                      this.setState({ num: page })
-                    }}
-
-                    onError={(error) => {
-                      console.log(error);
-                    }}
-                    onScaleChanged={(SliderValue)=>{this.setState({SliderValue:SliderValue})}}
-                    scale={this.state.SliderValue}
-                    maxScale={2}
-                    minScale={1}
-                    enablePaging
-                    page={this.state.num}
-                    horizontal
-                    onPageSingleTap={(page) => this.showmenu()}
-                    onPressLink={(uri) => {
-                      console.log(`Link presse: ${uri}`)
-                    }}
-                    style={styles.pdf} />
-
-                </>
-              }
-
-            </>
-            :
-            <FlatList
-              style={{ flex: 1 }}
-              showsVerticalScrollIndicator={false}
-              data={this.state.book_mark.split(",")}
-              renderItem={this.renderItem}
-              keyExtractor={(item, index) => index.toString()}
-            />
+          <FlatList
+            style={{ flex: 1 }}
+            showsVerticalScrollIndicator={false}
+            data={this.state.book_mark.split(",")}
+            renderItem={this.renderItem}
+            keyExtractor={(item, index) => index.toString()}
+          />
         }
 
 
 
 
 
-        {<Animatable.View
+        {/* {<Animatable.View
           animation={this.state.showbtn ? "zoomIn" : "zoomOut"} delay={250}
-          style={{ width: "10%", height: "30%", position: "absolute", alignSelf: "flex-end", bottom: "10%", right: "1%" }}>
+          style={{ width: "50%", height: "50%", position: "absolute", alignSelf: "flex-end",bottom:"5%" }}>
           <BigSlider
             maximumValue={2}
             trackStyle={{ backgroundColor: 'rgba(208, 88, 10, 0.6)' }}
@@ -286,10 +249,23 @@ export default class PDFExample extends React.Component {
             // </Text>}
             style={{ width: 40, backgroundColor: 'rgba(0,0,0,.7)', height: "50%" }}
             value={this.state.SliderValue}
-            
+
             onValueChange={SliderValue => { this.setState({ SliderValue }) }}
             minimumValue={1} />
-        </Animatable.View>}
+
+            <Slider
+              style={{  height: "50%" ,transform: [{rotate:"90deg"}] }}
+              maximumValue={2}
+              onSlidingComplete={(SliderValue) => this.animation(parseInt(SliderValue))}
+              value={this.state.SliderValue}
+              inverted
+              minimumValue={1}
+              step={0.1}
+              thumbTintColor={"rgba(99, 96, 255, 1)"}
+              minimumTrackTintColor="rgba(99, 96, 255, 1)"
+              maximumTrackTintColor="#fff"
+            />
+        </Animatable.View>} */}
         <Animatable.View
           animation={this.state.showbtn ? "slideInUp" : "slideOutDown"} delay={250}
           style={{
@@ -300,9 +276,9 @@ export default class PDFExample extends React.Component {
           }}>
 
 
-          <Animatable.View
+        {this.state.num!==1&&   <Animatable.View
             animation={this.state.showbtn ? "slideInLeft" : "slideOutLeft"} delay={250}>
-            <TouchableOpacity
+          <TouchableOpacity
               onPress={() => this.animation(this.state.num - 1)}
               onLongPress={() => this.setState({ select_back_ani: true })}
               style={{
@@ -328,38 +304,51 @@ export default class PDFExample extends React.Component {
                   lineHeight: hp('3%')
                 }}>Previous</Text>
             </TouchableOpacity>
-          </Animatable.View>
+          </Animatable.View>}
+
+
           <Animatable.View
-            animation={this.state.showbtn ? "slideInRight" : "slideOutRight"} delay={250}
-          >
+            animation={this.state.showbtn ? "zoomIn" : "zoomOut"} delay={250}
+            style={{alignSelf:"center"}}>
+
             <TouchableOpacity
-              onPress={() => this.animation(this.state.num + 1)}
-              onLongPress={() => this.setState({ select_next_ani: true })}
-              style={{
-                backgroundColor: "rgba(99, 96, 255, 1)",
-                borderRadius: hp('1%'),
-                paddingVertical: hp('2%'),
-                width: wp('35%'),
-                alignItems: "center",
-                shadowColor: "#000",
-                shadowOffset: {
-                  width: 0,
-                  height: 1,
-                },
-                shadowOpacity: 0.20,
-                shadowRadius: 1.41,
-                elevation: 2,
-              }}>
-              <Text
-                allowFontScaling={false}
-                style={{
-                  fontSize: hp('2.4%'),
-                  color: "#FFF",
-                  lineHeight: hp('3%')
-                }}>Next</Text>
+              onPress={() => this.setState({ Popup: false })}>
+              <Text style={{ alignSelf: "center", color: "rgba(99, 96, 255, 1)", marginHorizontal: "2%" }}>{this.state.num} / {this.state.total}</Text>
             </TouchableOpacity>
           </Animatable.View>
-        </Animatable.View>
+
+
+          {this.state.num!==this.state.total&&  <Animatable.View
+              animation={this.state.showbtn ? "slideInRight" : "slideOutRight"} delay={250}
+            >
+              <TouchableOpacity
+                onPress={() => this.animation(this.state.num + 1)}
+                onLongPress={() => this.setState({ select_next_ani: true })}
+                style={{
+                  backgroundColor: "rgba(99, 96, 255, 1)",
+                  borderRadius: hp('1%'),
+                  paddingVertical: hp('2%'),
+                  width: wp('35%'),
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 1,
+                  },
+                  shadowOpacity: 0.20,
+                  shadowRadius: 1.41,
+                  elevation: 2,
+                }}>
+                <Text
+                  allowFontScaling={false}
+                  style={{
+                    fontSize: hp('2.4%'),
+                    color: "#FFF",
+                    lineHeight: hp('3%')
+                  }}>Next</Text>
+              </TouchableOpacity>
+            </Animatable.View>}
+          </Animatable.View>
 
         {this.state.Popup &&
           <Modal
@@ -635,7 +624,7 @@ export default class PDFExample extends React.Component {
                 {this.state.select_back_ani &&
                   <ScrollView>
                     {this.state.animation_back.map((item, index) => {
-                      return (<TouchableOpacity key={index} onPress={() => this.setState({ back_ani: index , select_next_ani: false, select_back_ani: false })}>
+                      return (<TouchableOpacity key={index} onPress={() => this.setState({ back_ani: index, select_next_ani: false, select_back_ani: false })}>
                         <Text allowFontScaling={false}
                           style={{
                             textAlign: "center",
@@ -643,7 +632,7 @@ export default class PDFExample extends React.Component {
                             fontFamily: "Roboto-Regular",
                             marginVertical: hp('2%'),
                             color: index == this.state.back_ani ? "blue" : "#222"
-                          }} >{item} {( index == this.state.back_ani?"(Selected)":"")}</Text>
+                          }} >{item} {(index == this.state.back_ani ? "(Selected)" : "")}</Text>
                       </TouchableOpacity>)
                     })
                     }
@@ -652,7 +641,7 @@ export default class PDFExample extends React.Component {
                 }{this.state.select_next_ani &&
                   <ScrollView>
                     {this.state.animation_next.map((item, index) => {
-                      return (<TouchableOpacity key={index} onPress={() => this.setState({ next_ani: index, select_next_ani: false, select_back_ani: false  })}>
+                      return (<TouchableOpacity key={index} onPress={() => this.setState({ next_ani: index, select_next_ani: false, select_back_ani: false })}>
                         <Text allowFontScaling={false}
                           style={{
                             textAlign: "center",
@@ -660,7 +649,7 @@ export default class PDFExample extends React.Component {
                             fontFamily: "Roboto-Regular",
                             marginVertical: hp('2%'),
                             color: index == this.state.next_ani ? "blue" : "#222"
-                          }} >{item} {( index == this.state.next_ani?"(Selected)":"")}</Text>
+                          }} >{item} {(index == this.state.next_ani ? "(Selected)" : "")}</Text>
                       </TouchableOpacity>)
                     })
 
