@@ -20,7 +20,6 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Foundation from 'react-native-vector-icons/Foundation';
 import * as Animatable from 'react-native-animatable';
 import Slider from '@react-native-community/slider';
-import BigSlider from 'react-native-big-slider'
 // pdf uri
 const source = { uri: 'https://books.goalkicker.com/ReactNativeBook/ReactNativeNotesForProfessionals.pdf', cache: true };
 
@@ -33,8 +32,6 @@ export default class PDFExample extends React.Component {
     book_mark: "'',1,5,25,62,75,91",
     show_bk: false,
     value: 0,
-    animation_next: ["slideInRight", "zoomInRight", "flipInY", "bounceInRight", "fadeInRightBig", "fadeInRight", "lightSpeedIn", "flash", "jello", "pulse", "rotate", "rubberBand", "shake", "swing", "tada", "wobble"],
-    animation_back: ["slideInLeft", "zoomInLeft", "flipInY", "bounceInLeft", "fadeInLeftBig", "fadeInLeft", "lightSpeedIn", "flash", "jello", "pulse", "rotate", "rubberBand", "shake", "swing", "tada", "wobble"],
     back_ani: 0,
     next_ani: 0,
     nextpage: "pulse"
@@ -200,11 +197,12 @@ export default class PDFExample extends React.Component {
               onAnimationEnd={() => this.setState({ nextpage: "" })}>
               <Pdf
                 source={source}
-                onLoadComplete={(numberOfPages, filePath) => {
+                onLoadComplete={(numberOfPages, filePath, {width, height}, tableContents) => {
                   this.setState({ total: numberOfPages })
+                  // console.log(tableContents)
                 }}
                 onPageChanged={async (page, numberOfPages) => {
-                  this.animation(page)
+                 this.setState({num:page})
                 }}
                 onError={(error) => {
                   console.log(error);
